@@ -30,8 +30,24 @@ async function request(path, { method = "GET", body, token, signal, headers = {}
     // Handle 401 Unauthorized - Attempt to refresh token
     if (res.status === 401 && !opts._retry && !url.includes("/refresh-token")) {
       console.log("🔒 401 detected, attempting token refresh...");
+      const refreshToken = localStorage.getItem("refreshToken");
+      
+      // If no refresh token, clear everything and redirect
+      if (!refreshToken) {
+        console.error("❌ No refresh token available");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/login";
+        }
+        const err = new Error(data?.message || `Request failed: ${res.status}`);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
         const refreshRes = await fetch(API_BASE + "/users/refresh-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

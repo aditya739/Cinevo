@@ -15,12 +15,16 @@ export function AuthProvider({ children }) {
         // call current-user endpoint which returns user if cookie token is present
         const res = await api.get("/users/current-user");
         const payload = res?.data || res;
-        if (payload) {
+        
+        // Only set user if payload is a valid object (not an error message string)
+        if (payload && typeof payload === "object" && !Array.isArray(payload)) {
           setUser(payload);
           localStorage.setItem("user", JSON.stringify(payload));
         }
       } catch (e) {
-        // ignore
+        console.debug("Failed to load current user:", e.message);
+        // Clear invalid stored user data
+        localStorage.removeItem("user");
       }
     })();
   }, []);
