@@ -14,28 +14,34 @@ A modern, full-stack video sharing platform built with React and Node.js. Upload
 - **Video Discovery** - Browse, search, and filter videos by category and date
 - **Social Features** - Like, comment, and save videos to collections
 - **Trending Content** - Discover popular and trending videos
-- **User Profiles** - Personalized user accounts and video management
+- **User Profiles** - View user channels with their videos and statistics
+- **User Settings** - Manage profile information, security settings, and password
 - **Collections** - Create and manage video playlists
 - **Watch History** - Track and revisit watched videos
-- **YouTube Integration** - Embed and interact with YouTube content
+- **YouTube Integration** - Search and embed YouTube content
 - **Shorts** - Vertical video feed with swipe navigation (TikTok-style)
+- **Admin Dashboard** - Analytics, user management, and content moderation
 
 ### Advanced Features
 - **Real-time Comments** - Interactive comment system
-- **Video Reports** - Content moderation and reporting
+- **Video Reports** - Content moderation and reporting system
 - **Responsive Design** - Mobile-first, cross-device compatibility
 - **Dark/Light Theme** - Theme switching support
-- **Search & Filters** - Advanced video discovery tools
+- **Advanced Search** - Search videos by title, creator, category, duration, views, and upload date
+- **YouTube Search Integration** - Search YouTube videos directly from the app
 - **Subscription System** - Follow creators and get updates
+- **Error Handling** - Graceful error handling with user-friendly messages
+- **Loading States** - Smooth loading indicators throughout the app
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **React 19** - Modern UI library with hooks
-- **React Router DOM** - Client-side routing
-- **Tailwind CSS** - Utility-first CSS framework
-- **Vite** - Fast build tool and dev server
+- **React Router DOM v6** - Client-side routing
+- **Tailwind CSS v3** - Utility-first CSS framework
+- **Vite v7.2.4** - Fast build tool and dev server (with security fixes)
 - **Context API** - State management for auth and themes
+- **Custom API Service** - Centralized API calls with error handling and token refresh
 
 ### Backend
 - **Node.js** - JavaScript runtime
@@ -70,8 +76,23 @@ Cinevo/
     ├── src/
     │   ├── components/     # Reusable UI components
     │   ├── pages/         # Route components
+    │   │   ├── Home.jsx
+    │   │   ├── VideoPage.jsx
+    │   │   ├── Channel.jsx          # NEW: User channel/profile
+    │   │   ├── Settings.jsx         # NEW: User settings
+    │   │   ├── Collections.jsx
+    │   │   ├── Trending.jsx
+    │   │   ├── Shorts.jsx
+    │   │   ├── SearchPage.jsx
+    │   │   ├── Upload.jsx
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   └── AdminDashboard.jsx
     │   ├── services/      # API & auth services
+    │   │   ├── api.jsx    # Centralized API with error handling
+    │   │   └── auth.jsx   # Authentication context
     │   ├── contexts/      # React contexts
+    │   │   └── ThemeContext.jsx
     │   └── assets/        # Static assets
     └── package.json
 ```
@@ -207,7 +228,53 @@ The application uses MongoDB with the following collections:
 - CORS protection
 - Input validation and sanitization
 
-## 🐛 Recent Fixes
+## 🐛 Recent Fixes & Updates
+
+### v1.4 - Complete Error Handling & New Pages (Latest)
+**Major Improvements:**
+1. Created Channel page (`/c/:username`) - View user profiles and their videos
+2. Created Settings page (`/settings`) - User profile settings, security, and logout
+3. Fixed all "y.data.data is not iterable" errors across the app
+4. Improved error handling on all video fetch pages (Home, Trending, Shorts, Collections, SearchPage)
+5. Switched all pages to use consistent `api` service instead of axios
+6. Added proper error messages and loading states everywhere
+7. Updated Vite from v4.5.3 to v7.2.4 (fixed security vulnerabilities)
+8. Updated baseline-browser-mapping to latest version
+
+**Features Added:**
+- **Channel Page** - View any user's profile with their videos and statistics
+- **Settings Page** - Manage profile info, change password, and logout
+- **Improved Error Handling** - All pages now gracefully handle backend connection issues
+- **User-Friendly Error Messages** - Clear feedback when things go wrong
+
+**Files Modified:**
+- `frontend/src/pages/Channel.jsx` - NEW: User channel/profile page
+- `frontend/src/pages/Settings.jsx` - NEW: User settings and profile management
+- `frontend/src/App.jsx` - Added new routes and imports
+- `frontend/src/pages/Collections.jsx` - Improved error handling
+- `frontend/src/pages/Trending.jsx` - Fixed array validation
+- `frontend/src/pages/Shorts.jsx` - Fixed error handling
+- `frontend/src/pages/SearchPage.jsx` - Fixed YouTube search, improved error handling
+- `frontend/src/services/api.jsx` - Better 401 error handling
+- `frontend/src/services/auth.jsx` - Improved payload validation
+- `package.json` - Updated dependencies
+
+### v1.3 - Token Refresh & Auth Improvements
+**Issues Fixed:**
+- 401 error loop when refresh token missing
+- Invalid data parsing when setting user state
+- Missing error handling for null/missing refresh tokens
+
+**Solutions:**
+- Check if refreshToken exists before attempting refresh
+- Validate payload is valid object before setting user state
+- Redirect to login immediately if no refresh token available
+
+### v1.2 - Dependency & Build Fixes
+**Improvements:**
+- Updated Vite to v7.2.4 (from v4.5.3)
+- Fixed JSX syntax errors in AdminDashboard
+- Resolved all security vulnerabilities
 
 ### Fixed: Infinite Page Reload Loop on Admin Panel (v1.1)
 **Issue:** The admin dashboard was causing infinite page reloads redirecting to login repeatedly.
@@ -227,6 +294,90 @@ The application uses MongoDB with the following collections:
 **Files Modified:**
 - `frontend/src/pages/AdminDashboard.jsx` - Added auth checks and role validation
 - `frontend/src/services/api.jsx` - Improved 401 error handling to prevent redirect loops
+
+## 🛣️ Application Routes
+
+### Public Routes
+- `/` - Home page with video feed
+- `/login` - User login
+- `/register` - User registration
+- `/videos/:id` - Video player page
+- `/trending` - Trending videos page
+- `/shorts` - Short videos feed
+- `/search` - Search and filter videos
+
+### Protected Routes (Login Required)
+- `/upload` - Upload new video
+- `/collections` - User's video collections
+- `/c/:username` - User's channel/profile
+- `/settings` - User settings and profile management
+
+### Admin Routes (Admin Only)
+- `/admin` - Admin dashboard with analytics, user management, and reports
+
+## 🆘 Troubleshooting
+
+### Common Issues & Solutions
+
+#### White Screen / App Won't Load
+- **Check 1:** Ensure backend is running on `http://localhost:8000`
+- **Check 2:** Verify `VITE_API_URL` is set correctly in frontend `.env`
+- **Check 3:** Open browser console (F12) to check for errors
+- **Solution:** Restart both frontend and backend servers
+
+#### Backend Connection Refused
+- **Issue:** `localhost:8000/api/v1/... Failed to load resource: net::ERR_CONNECTION_REFUSED`
+- **Solution:** 
+  - Make sure backend server is running: `npm run dev` in backend folder
+  - Check PORT in backend `.env` (default: 8000)
+  - Verify MongoDB connection string in `.env`
+
+#### Videos Not Loading
+- **Issue:** Empty video list or error messages
+- **Solution:**
+  - Check backend logs for errors
+  - Verify Cloudinary credentials in backend `.env`
+  - Check MongoDB connection and data
+
+#### Login Issues
+- **Issue:** Cannot login or stuck on login page
+- **Solution:**
+  - Clear browser cache and localStorage
+  - Check JWT secrets in backend `.env`
+  - Verify user exists in MongoDB
+
+#### Search Not Working
+- **Issue:** YouTube search or local search returns no results
+- **Solution:**
+  - Verify `YOUTUBE_API_KEY` is valid and has quota
+  - Check backend `/search` endpoint logs
+  - Try searching with different keywords
+
+#### Infinite Loading / Unresponsive UI
+- **Issue:** Page keeps loading or freezes
+- **Solution:**
+  - Check browser console for errors
+  - Clear browser cache
+  - Restart the dev server
+  - Check network tab (F12) for failed requests
+
+#### "y.data.data is not iterable" Error
+- **Issue:** TypeError when loading videos
+- **Solution:** This has been fixed in v1.4. Update your code to latest version.
+
+#### Port Already in Use
+- **Issue:** `Error: listen EADDRINUSE: address already in use :::8000`
+- **Solution:**
+  - Kill process using port: `lsof -i :8000` (Mac/Linux)
+  - Or change PORT in `.env` to a different number
+  - Windows: `netstat -ano | findstr :8000` then `taskkill /PID <PID> /F`
+
+#### Build Errors
+- **Issue:** Build fails with ESLint or Vite errors
+- **Solution:**
+  - Clear `node_modules` and `dist` folder
+  - Run `npm install` again
+  - Check for syntax errors in modified files
 
 ## 🤝 Contributing
 
