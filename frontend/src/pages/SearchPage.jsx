@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+import api from "../services/api.jsx";
 
 const SearchPage = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [filters, setFilters] = useState({
     search: "",
     category: "",
@@ -35,18 +34,18 @@ const SearchPage = () => {
 
   const fetchVideos = async () => {
     setLoading(true);
+    setError("");
     try {
       if (filters.source === "youtube") {
         // YouTube Search
         const params = new URLSearchParams();
         if (filters.search) params.append("q", filters.search);
         
-        const response = await axios.get(`${API_URL}/youtube/search?${params}`, {
-          withCredentials: true,
-        });
+        const response = await api.get(`/youtube/search?${params}`);
         
         // Map YouTube results to match local video structure
-        const ytVideos = response.data.data?.items?.map(item => ({
+        const items = response?.data?.items ?? response?.items ?? [];
+        const ytVideos = (Array.isArray(items) ? items : []).map(item => ({
           _id: item.id.videoId,
           title: item.snippet.title,
           thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url,
@@ -55,7 +54,7 @@ const SearchPage = () => {
           duration: 0, // YouTube API search doesn't return duration in snippet
           isYoutube: true,
           youtubeId: item.id.videoId
-        })) || [];
+        }));
         setVideos(ytVideos);
       } else {
         // Local Search
@@ -64,13 +63,14 @@ const SearchPage = () => {
           if (value && key !== "source") params.append(key, value);
         });
 
-        const response = await axios.get(`${API_URL}/videos?${params}`, {
-          withCredentials: true,
-        });
-        setVideos(response.data.data.videos || []);
+        const response = await api.get(`/videos?${params}`);
+        const arr = response?.data?.videos ?? response?.videos ?? response ?? [];
+        const videosList = Array.isArray(arr) ? arr : [];
+        setVideos(videosList);
       }
-    } catch (error) {
-      console.error("Error fetching videos:", error);
+    } catch (err) {
+      console.error("Error fetching videos:", err.message);
+      setError("Unable to fetch videos. Is the backend running?");
       setVideos([]);
     } finally {
       setLoading(false);
@@ -276,10 +276,20 @@ const SearchPage = () => {
         </form>
 
         {/* Results */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+        
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             <p className="mt-4 text-gray-400">Searching...</p>
+          </div>
+        ) : videos.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            No videos found. Try different search terms.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -333,13 +343,6 @@ const SearchPage = () => {
                 </Link>
               )
             ))}
-          </div>
-        )}
-
-        {!loading && videos.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
-            <p className="text-xl">No videos found</p>
-            <p className="mt-2">Try adjusting your filters</p>
           </div>
         )}
       </div>
