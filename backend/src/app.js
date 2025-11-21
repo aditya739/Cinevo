@@ -33,8 +33,7 @@ app.use(
   })
 );
 
-// Explicit OPTIONS handler for preflight requests
-app.options('*', cors());
+
 
 // -------------------------
 // Body parsers / static / cookies
