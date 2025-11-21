@@ -26,7 +26,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
     maxDuration,
     uploadDate,
     tags,
-    isShort
+    isShort,
+    minViews,
+    maxViews,
+    creator
   } = req.query;
 
   // build filter
@@ -72,6 +75,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
   // filter by isShort if provided
   if (isShort !== undefined) {
     filter.isShort = isShort === 'true';
+  }
+
+  // filter by views range
+  if (minViews || maxViews) {
+    filter.views = {};
+    if (minViews) filter.views.$gte = Number(minViews);
+    if (maxViews) filter.views.$lte = Number(maxViews);
   }
 
   // build sort

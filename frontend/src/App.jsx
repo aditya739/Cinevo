@@ -9,6 +9,8 @@ import Upload from "./pages/Upload.jsx";
 import Collections from "./pages/Collections.jsx";
 import Trending from "./pages/Trending.jsx";
 import Shorts from "./pages/Shorts.jsx";
+import SearchPage from "./pages/SearchPage.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 import { AuthProvider } from "./services/auth.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
@@ -29,6 +31,8 @@ export default function App() {
               <Route path="/collections" element={<Collections />} />
               <Route path="/trending" element={<Trending />} />
               <Route path="/shorts" element={<Shorts />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>
         </div>

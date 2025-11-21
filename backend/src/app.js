@@ -60,6 +60,8 @@ import collectionRouter from "./routes/collection.routes.js";
 import reportRouter from "./routes/report.routes.js";
 import trendingRouter from "./routes/trending.routes.js";
 import watchHistoryRouter from "./routes/watchHistory.routes.js";
+import watchProgressRouter from "./routes/watchProgress.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 
 // -------------------------
 // Routes declaration
@@ -83,6 +85,8 @@ app.use("/api/v1/collections", collectionRouter);
 app.use("/api/v1/reports", reportRouter);
 app.use("/api/v1/trending", trendingRouter);
 app.use("/api/v1/watch-history", watchHistoryRouter);
+app.use("/api/v1/watch-progress", watchProgressRouter);
+app.use("/api/v1/admin", adminRouter);
 
 // -------------------------
 // Global error handler (safeguard)

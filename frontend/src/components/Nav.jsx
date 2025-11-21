@@ -24,7 +24,9 @@ export default function Nav() {
               <Link to="/shorts" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Shorts</Link>
               <Link to="/trending" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Trending</Link>
               <Link to="/upload" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Upload</Link>
+              <Link to="/search" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Search</Link>
               {user && <Link to="/collections" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Collections</Link>}
+              {user?.role === "admin" && <Link to="/admin" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Admin</Link>}
             </div>
           </div>
 

@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema(
     coverImage: { type: String },
     refreshToken: { type: String },
     watchHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    isBanned: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

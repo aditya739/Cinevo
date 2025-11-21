@@ -19,6 +19,24 @@ const playlistSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
+    visibility: {
+        type: String,
+        enum: ["public", "private"],
+        default: "public"
+    },
+    collaborative: {
+        type: Boolean,
+        default: false
+    },
+    coverImage: {
+        type: String
+    },
+    collaborators: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ],
 }, {timestamps: true})
 
 
