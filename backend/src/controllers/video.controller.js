@@ -572,7 +572,6 @@ export {
   togglePublishStatus,
   reactToVideo,
   getRecommendations,
-  getRecommendations,
   getUserProfile,
   getShortsFeed
 };

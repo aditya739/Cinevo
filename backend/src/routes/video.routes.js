@@ -9,7 +9,6 @@ import {
   togglePublishStatus,
   reactToVideo,
   getRecommendations,
-  getRecommendations,
   getUserProfile,
   getShortsFeed
 } from "../controllers/video.controller.js";
