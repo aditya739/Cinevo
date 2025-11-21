@@ -59,10 +59,20 @@ async function request(path, { method = "GET", body, token, signal, headers = {}
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
-          window.location.href = "/login"; // Force redirect to login
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes("/login")) {
+            window.location.href = "/login";
+          }
         }
       } catch (refreshError) {
         console.error("❌ Token refresh error:", refreshError);
+        // Clear tokens and redirect only if not on login page
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/login";
+        }
       }
     }
 

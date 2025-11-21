@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../services/auth.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("analytics");
   const [analytics, setAnalytics] = useState(null);
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Check if user is admin on mount
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (user.role !== "admin") {
+      setError("Unauthorized: Only admins can access this page");
+      setTimeout(() => navigate("/"), 2000);
+      return;
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     if (activeTab === "analytics") {
@@ -99,6 +116,20 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-600 text-white p-4 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Prevent rendering if not admin */}
+        {!user || user.role !== "admin" ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400">Redirecting...</p>
+          </div>
+        ) : (
+          <>
         {/* Tabs */}
         <div className="flex gap-4 mb-6 border-b border-gray-700">
           <button

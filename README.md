@@ -207,6 +207,27 @@ The application uses MongoDB with the following collections:
 - CORS protection
 - Input validation and sanitization
 
+## 🐛 Recent Fixes
+
+### Fixed: Infinite Page Reload Loop on Admin Panel (v1.1)
+**Issue:** The admin dashboard was causing infinite page reloads redirecting to login repeatedly.
+
+**Root Cause:** 
+- AdminDashboard component lacked authentication checks
+- When unauthorized (401), the API would redirect to /login
+- This created a redirect loop: admin page → 401 → login → loop back → admin
+
+**Solution:**
+1. Added `useAuth()` hook in AdminDashboard to check user authentication
+2. Added role-based access control - only admins can access the dashboard
+3. Non-authenticated users are redirected to login page (no loop)
+4. Non-admin users are shown an error message and redirected to home after 2 seconds
+5. Updated API error handler to prevent redundant redirects (checks current pathname)
+
+**Files Modified:**
+- `frontend/src/pages/AdminDashboard.jsx` - Added auth checks and role validation
+- `frontend/src/services/api.jsx` - Improved 401 error handling to prevent redirect loops
+
 ## 🤝 Contributing
 
 1. Fork the repository
