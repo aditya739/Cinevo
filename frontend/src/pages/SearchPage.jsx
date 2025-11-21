@@ -16,8 +16,9 @@ const SearchPage = () => {
     minViews: "",
     maxViews: "",
     creator: "",
+    creator: "",
     sort: "newest",
-    source: "local",
+    source: "local", // 'local' or 'youtube'
   });
 
   const categories = [
@@ -37,6 +38,7 @@ const SearchPage = () => {
     setLoading(true);
     try {
       if (filters.source === "youtube") {
+        // YouTube Search
         const params = new URLSearchParams();
         if (filters.search) params.append("q", filters.search);
         
@@ -44,18 +46,20 @@ const SearchPage = () => {
           withCredentials: true,
         });
         
+        // Map YouTube results to match local video structure
         const ytVideos = response.data.data.items.map(item => ({
           _id: item.id.videoId,
           title: item.snippet.title,
           thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url,
           owner: { username: item.snippet.channelTitle },
-          views: 0,
-          duration: 0,
+          views: 0, // YouTube API search doesn't return views in snippet
+          duration: 0, // YouTube API search doesn't return duration in snippet
           isYoutube: true,
           youtubeId: item.id.videoId
         }));
         setVideos(ytVideos);
       } else {
+        // Local Search
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
           if (value && key !== "source") params.append(key, value);
@@ -107,8 +111,10 @@ const SearchPage = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Advanced Search</h1>
 
+        {/* Search Form */}
         <form onSubmit={handleSearch} className="bg-gray-800 p-6 rounded-lg mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Search Query */}
             <div>
               <label className="block text-sm font-medium mb-2">Search</label>
               <input
@@ -121,6 +127,7 @@ const SearchPage = () => {
               />
             </div>
 
+            {/* Source Filter */}
             <div>
               <label className="block text-sm font-medium mb-2">Source</label>
               <select
@@ -134,6 +141,7 @@ const SearchPage = () => {
               </select>
             </div>
 
+            {/* Category */}
             <div>
               <label className="block text-sm font-medium mb-2">Category</label>
               <select
@@ -151,6 +159,7 @@ const SearchPage = () => {
               </select>
             </div>
 
+            {/* Creator */}
             <div>
               <label className="block text-sm font-medium mb-2">Creator</label>
               <input
@@ -163,6 +172,7 @@ const SearchPage = () => {
               />
             </div>
 
+            {/* Duration Range */}
             <div>
               <label className="block text-sm font-medium mb-2">Min Duration (sec)</label>
               <input
@@ -187,6 +197,7 @@ const SearchPage = () => {
               />
             </div>
 
+            {/* Views Range */}
             <div>
               <label className="block text-sm font-medium mb-2">Min Views</label>
               <input
@@ -211,6 +222,7 @@ const SearchPage = () => {
               />
             </div>
 
+            {/* Upload Date */}
             <div>
               <label className="block text-sm font-medium mb-2">Upload Date</label>
               <select
@@ -226,6 +238,8 @@ const SearchPage = () => {
               </select>
             </div>
 
+            {/* Sort */}
+            {/* Sort - Only show for local */}
             {filters.source === "local" && (
               <div>
                 <label className="block text-sm font-medium mb-2">Sort By</label>
@@ -244,6 +258,7 @@ const SearchPage = () => {
             )}
           </div>
 
+          {/* Buttons */}
           <div className="flex gap-4 mt-6">
             <button
               type="submit"
@@ -261,6 +276,7 @@ const SearchPage = () => {
           </div>
         </form>
 
+        {/* Results */}
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -270,9 +286,11 @@ const SearchPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video) => (
               video.isYoutube ? (
-                <Link
+                <a
                   key={video._id}
-                  to={`/youtube/${video.youtubeId}`}
+                  href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-red-500 transition group"
                 >
                   <div className="relative">
@@ -291,7 +309,7 @@ const SearchPage = () => {
                     </h3>
                     <p className="text-sm text-gray-400 mb-2">{video.owner?.username}</p>
                   </div>
-                </Link>
+                </a>
               ) : (
                 <Link
                   key={video._id}
