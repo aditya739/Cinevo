@@ -6,16 +6,35 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 // -------------------------
-// CORS (simplified for Vercel)
+// CORS (enhanced for Vercel)
 // -------------------------
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://cinevo-xi.vercel.app',
+  'https://cinevo-xi.vercel.app/',
+];
+
 app.use(
   cors({
-    origin: true, // Allow all origins for now
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all for now, can restrict later
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
+
+// Explicit OPTIONS handler for preflight requests
+app.options('*', cors());
 
 // -------------------------
 // Body parsers / static / cookies
