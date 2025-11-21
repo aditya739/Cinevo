@@ -8,6 +8,7 @@ import Register from "./pages/Register.jsx";
 import Upload from "./pages/Upload.jsx";
 import Collections from "./pages/Collections.jsx";
 import Trending from "./pages/Trending.jsx";
+import Shorts from "./pages/Shorts.jsx";
 import { AuthProvider } from "./services/auth.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
@@ -27,6 +28,7 @@ export default function App() {
               <Route path="/upload" element={<Upload />} />
               <Route path="/collections" element={<Collections />} />
               <Route path="/trending" element={<Trending />} />
+              <Route path="/shorts" element={<Shorts />} />
             </Routes>
           </main>
         </div>

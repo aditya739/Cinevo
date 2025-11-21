@@ -25,7 +25,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
     minDuration,
     maxDuration,
     uploadDate,
-    tags
+    tags,
+    isShort
   } = req.query;
 
   // build filter
@@ -66,6 +67,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
   if (tags) {
     const tagArray = String(tags).split(",").map(tag => tag.trim());
     filter.tags = { $in: tagArray };
+  }
+  
+  // filter by isShort if provided
+  if (isShort !== undefined) {
+    filter.isShort = isShort === 'true';
   }
 
   // build sort
@@ -219,7 +225,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
     owner: req.user._id,
     views: 0,
     likes: 0,
-    isPublished: true
+    isPublished: true,
+    isShort: Number(duration) <= 60
   });
 
   // populate owner for response
@@ -498,6 +505,64 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }, "User profile fetched"));
 });
 
+/**
+ * GET /videos/shorts/feed
+ * Get a feed of shorts (random/algorithmic)
+ */
+const getShortsFeed = asyncHandler(async (req, res) => {
+  const { limit = 10 } = req.query;
+
+  const shorts = await Video.aggregate([
+    { $match: { isShort: true, isPublished: true } },
+    { $sample: { size: Number(limit) } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner"
+      }
+    },
+    { $unwind: "$owner" },
+    {
+      $lookup: {
+        from: "reactions",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$user", new mongoose.Types.ObjectId(req.user?._id || "000000000000000000000000")] }
+                ]
+              }
+            }
+          }
+        ],
+        as: "userReaction"
+      }
+    },
+    {
+      $addFields: {
+        userReaction: { $arrayElemAt: ["$userReaction.type", 0] }
+      }
+    },
+    {
+      $project: {
+        "owner.password": 0,
+        "owner.refreshToken": 0,
+        "owner.email": 0,
+        "owner.fullName": 0,
+        "owner.coverImage": 0,
+        "owner.watchHistory": 0
+      }
+    }
+  ]);
+
+  return res.status(200).json(new ApiResponse(200, shorts, "Shorts feed fetched"));
+});
+
 export {
   getAllVideos,
   publishAVideo,
@@ -507,5 +572,7 @@ export {
   togglePublishStatus,
   reactToVideo,
   getRecommendations,
-  getUserProfile
+  getRecommendations,
+  getUserProfile,
+  getShortsFeed
 };

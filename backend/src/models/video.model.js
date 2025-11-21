@@ -26,6 +26,10 @@ const videoSchema = new Schema(
       type: Number,
       required: true,
     },
+    isShort: {
+      type: Boolean,
+      default: false,
+    },
     likes: {
       type: Number,
       default: 0,

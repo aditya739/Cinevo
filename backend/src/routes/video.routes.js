@@ -9,7 +9,9 @@ import {
   togglePublishStatus,
   reactToVideo,
   getRecommendations,
+  getRecommendations,
   getUserProfile,
+  getShortsFeed
 } from "../controllers/video.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -20,6 +22,7 @@ const router = Router();
 router.get("/", getAllVideos);
 router.get("/:videoId", getVideoById);
 router.get("/recommendations/:videoId", getRecommendations);
+router.get("/shorts/feed", getShortsFeed);
 router.get("/users/:userId/profile", getUserProfile);
 
 // Protected routes (auth required)

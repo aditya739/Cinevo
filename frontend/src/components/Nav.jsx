@@ -21,6 +21,7 @@ export default function Nav() {
             </Link>
             <div className="hidden md:flex items-center gap-6">
               <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Explore</Link>
+              <Link to="/shorts" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Shorts</Link>
               <Link to="/trending" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Trending</Link>
               <Link to="/upload" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Upload</Link>
               {user && <Link to="/collections" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Collections</Link>}
