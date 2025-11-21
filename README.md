@@ -18,6 +18,7 @@ A modern, full-stack video sharing platform built with React and Node.js. Upload
 - **Collections** - Create and manage video playlists
 - **Watch History** - Track and revisit watched videos
 - **YouTube Integration** - Embed and interact with YouTube content
+- **Shorts** - Vertical video feed with swipe navigation (TikTok-style)
 
 ### Advanced Features
 - **Real-time Comments** - Interactive comment system
@@ -160,6 +161,7 @@ npm run dev
 
 ### Video Endpoints
 - `GET /api/v1/videos` - Get all videos (with search/filter)
+- `GET /api/v1/videos/shorts/feed` - Get shorts feed
 - `POST /api/v1/videos` - Upload new video
 - `GET /api/v1/videos/:id` - Get video by ID
 - `PATCH /api/v1/videos/:id` - Update video
