@@ -17,6 +17,7 @@ const SearchPage = () => {
     maxViews: "",
     creator: "",
     sort: "newest",
+    source: "local",
   });
 
   const categories = [
@@ -35,17 +36,39 @@ const SearchPage = () => {
   const fetchVideos = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
+      if (filters.source === "youtube") {
+        const params = new URLSearchParams();
+        if (filters.search) params.append("q", filters.search);
+        
+        const response = await axios.get(`${API_URL}/youtube/search?${params}`, {
+          withCredentials: true,
+        });
+        
+        const ytVideos = response.data.data.items.map(item => ({
+          _id: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url,
+          owner: { username: item.snippet.channelTitle },
+          views: 0,
+          duration: 0,
+          isYoutube: true,
+          youtubeId: item.id.videoId
+        }));
+        setVideos(ytVideos);
+      } else {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value && key !== "source") params.append(key, value);
+        });
 
-      const response = await axios.get(`${API_URL}/videos?${params}`, {
-        withCredentials: true,
-      });
-      setVideos(response.data.data.videos || []);
+        const response = await axios.get(`${API_URL}/videos?${params}`, {
+          withCredentials: true,
+        });
+        setVideos(response.data.data.videos || []);
+      }
     } catch (error) {
       console.error("Error fetching videos:", error);
+      setVideos([]);
     } finally {
       setLoading(false);
     }
@@ -75,6 +98,7 @@ const SearchPage = () => {
       maxViews: "",
       creator: "",
       sort: "newest",
+      source: "local",
     });
   };
 
@@ -83,10 +107,8 @@ const SearchPage = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Advanced Search</h1>
 
-        {/* Search Form */}
         <form onSubmit={handleSearch} className="bg-gray-800 p-6 rounded-lg mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Search Query */}
             <div>
               <label className="block text-sm font-medium mb-2">Search</label>
               <input
@@ -99,7 +121,19 @@ const SearchPage = () => {
               />
             </div>
 
-            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Source</label>
+              <select
+                name="source"
+                value={filters.source}
+                onChange={handleFilterChange}
+                className="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="local">Cinevo (Local)</option>
+                <option value="youtube">YouTube</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Category</label>
               <select
@@ -117,7 +151,6 @@ const SearchPage = () => {
               </select>
             </div>
 
-            {/* Creator */}
             <div>
               <label className="block text-sm font-medium mb-2">Creator</label>
               <input
@@ -130,7 +163,6 @@ const SearchPage = () => {
               />
             </div>
 
-            {/* Duration Range */}
             <div>
               <label className="block text-sm font-medium mb-2">Min Duration (sec)</label>
               <input
@@ -155,7 +187,6 @@ const SearchPage = () => {
               />
             </div>
 
-            {/* Views Range */}
             <div>
               <label className="block text-sm font-medium mb-2">Min Views</label>
               <input
@@ -180,7 +211,6 @@ const SearchPage = () => {
               />
             </div>
 
-            {/* Upload Date */}
             <div>
               <label className="block text-sm font-medium mb-2">Upload Date</label>
               <select
@@ -196,24 +226,24 @@ const SearchPage = () => {
               </select>
             </div>
 
-            {/* Sort */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Sort By</label>
-              <select
-                name="sort"
-                value={filters.sort}
-                onChange={handleFilterChange}
-                className="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="views">Most Views</option>
-                <option value="likes">Most Likes</option>
-              </select>
-            </div>
+            {filters.source === "local" && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Sort By</label>
+                <select
+                  name="sort"
+                  value={filters.sort}
+                  onChange={handleFilterChange}
+                  className="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="views">Most Views</option>
+                  <option value="likes">Most Likes</option>
+                </select>
+              </div>
+            )}
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-4 mt-6">
             <button
               type="submit"
@@ -231,7 +261,6 @@ const SearchPage = () => {
           </div>
         </form>
 
-        {/* Results */}
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -240,27 +269,54 @@ const SearchPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video) => (
-              <Link
-                key={video._id}
-                to={`/video/${video._id}`}
-                className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition"
-              >
-                <img
-                  src={video.thumbnail}
-                  alt={video.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                    {video.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-2">{video.owner?.username}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <span>{video.views?.toLocaleString()} views</span>
-                    <span>{Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}</span>
+              video.isYoutube ? (
+                <a
+                  key={video._id}
+                  href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-red-500 transition group"
+                >
+                  <div className="relative">
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
+                      YouTube
+                    </div>
                   </div>
-                </div>
-              </Link>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-red-400 transition-colors">
+                      {video.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-2">{video.owner?.username}</p>
+                  </div>
+                </a>
+              ) : (
+                <Link
+                  key={video._id}
+                  to={`/videos/${video._id}`}
+                  className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition"
+                >
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                      {video.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-2">{video.owner?.username}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <span>{video.views?.toLocaleString()} views</span>
+                      <span>{Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}</span>
+                    </div>
+                  </div>
+                </Link>
+              )
             ))}
           </div>
         )}
