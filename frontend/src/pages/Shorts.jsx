@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import ShortVideo from "../components/ShortVideo";
-import axios from "axios";
+import api from "../services/api.jsx";
 
 const Shorts = () => {
   const [shorts, setShorts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef(null);
 
@@ -14,13 +15,16 @@ const Shorts = () => {
 
   const fetchShorts = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/videos/shorts/feed?limit=5`, {
-        withCredentials: true
-      });
-      setShorts(prev => [...prev, ...response.data.data]);
-      setLoading(false);
+      const res = await api.get(`/videos/shorts/feed?limit=5`);
+      // Safely extract shorts array
+      const arr = res?.data?.shorts ?? res?.data ?? res;
+      const shortsArray = Array.isArray(arr) ? arr : [];
+      setShorts(prev => [...prev, ...shortsArray]);
+      setError("");
     } catch (error) {
-      console.error("Error fetching shorts:", error);
+      console.error("Error fetching shorts:", error.message);
+      setError("Unable to fetch shorts. Is the backend running?");
+    } finally {
       setLoading(false);
     }
   };
@@ -77,7 +81,27 @@ const Shorts = () => {
   };
 
   if (loading && shorts.length === 0) {
-    return <div className="flex justify-center items-center h-screen bg-black text-white">Loading Shorts...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-black text-white">
+        <div className="mb-4">Loading Shorts...</div>
+        {error && (
+          <div className="bg-red-600 px-4 py-2 rounded text-sm">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (error && shorts.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-black text-white">
+        <div className="text-center">
+          <div className="text-xl mb-4">❌ Unable to Load Shorts</div>
+          <div className="text-gray-400">{error}</div>
+        </div>
+      </div>
+    );
   }
 
   return (

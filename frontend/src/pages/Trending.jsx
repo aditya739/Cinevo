@@ -6,15 +6,21 @@ export default function Trending() {
   const [videos, setVideos] = React.useState([]);
   const [timeframe, setTimeframe] = React.useState("week");
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
     const fetchTrending = async () => {
       setLoading(true);
+      setError("");
       try {
         const res = await api.get(`/trending?timeframe=${timeframe}`);
-        setVideos(res?.data ?? res ?? []);
+        // Safely extract videos array
+        const arr = res?.data?.videos ?? res?.videos ?? res;
+        setVideos(Array.isArray(arr) ? arr : []);
       } catch (e) {
-        // Silently handle error
+        console.error("Error fetching trending:", e.message);
+        setError("Unable to fetch trending videos. Is the backend running?");
+        setVideos([]);
       } finally {
         setLoading(false);
       }
@@ -36,6 +42,12 @@ export default function Trending() {
           <option value="month">This Month</option>
         </select>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-4">
