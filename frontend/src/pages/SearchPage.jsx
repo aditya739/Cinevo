@@ -46,7 +46,7 @@ const SearchPage = () => {
         });
         
         // Map YouTube results to match local video structure
-        const ytVideos = response.data.data.items.map(item => ({
+        const ytVideos = response.data.data?.items?.map(item => ({
           _id: item.id.videoId,
           title: item.snippet.title,
           thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url,
@@ -55,7 +55,7 @@ const SearchPage = () => {
           duration: 0, // YouTube API search doesn't return duration in snippet
           isYoutube: true,
           youtubeId: item.id.videoId
-        }));
+        })) || [];
         setVideos(ytVideos);
       } else {
         // Local Search
