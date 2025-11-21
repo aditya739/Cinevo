@@ -5,6 +5,10 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+// Trust proxy for Vercel
+app.set("trust proxy", 1);
+
+
 // -------------------------
 // CORS (enhanced for Vercel)
 // -------------------------

@@ -7,6 +7,7 @@ import { User } from "../models/user.model.js"; // user schema
 import { uploadOnCloudinary } from "../utils/cloudinary.js"; // cloudinary upload helper
 import { ApiResponse } from "../utils/ApiResponse.js"; // custom success response
 import jwt from "jsonwebtoken"; // JWT for tokens
+import { COOKIE_OPTIONS } from "../constants.js";
 
 /* ------------------------------------------------------
    Helper: Generate Access + Refresh Tokens for a user
@@ -131,16 +132,10 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+    .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
     .json(
       new ApiResponse(
         200,
@@ -162,16 +157,10 @@ const logoutUser = asyncHandler(async (req, res) => {
     );
   }
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  };
-
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", COOKIE_OPTIONS)
+    .clearCookie("refreshToken", COOKIE_OPTIONS)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
@@ -199,19 +188,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Refresh token expired or already used");
     }
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    };
-
-    const { accessToken, refreshToken: newRefreshToken } =
-      await generateAccessAndRefreshToken(user._id);
-
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .cookie("refreshToken", newRefreshToken, COOKIE_OPTIONS)
       .json(
         new ApiResponse(
           200,
