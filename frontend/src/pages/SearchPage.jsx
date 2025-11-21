@@ -270,11 +270,9 @@ const SearchPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video) => (
               video.isYoutube ? (
-                <a
+                <Link
                   key={video._id}
-                  href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  to={`/youtube/${video.youtubeId}`}
                   className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-red-500 transition group"
                 >
                   <div className="relative">
@@ -293,7 +291,7 @@ const SearchPage = () => {
                     </h3>
                     <p className="text-sm text-gray-400 mb-2">{video.owner?.username}</p>
                   </div>
-                </a>
+                </Link>
               ) : (
                 <Link
                   key={video._id}

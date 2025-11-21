@@ -13,6 +13,7 @@ import SearchPage from "./pages/SearchPage.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import { AuthProvider } from "./services/auth.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
+import YouTubePlayer from "./pages/YouTubePlayer.jsx";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/trending" element={<Trending />} />
               <Route path="/shorts" element={<Shorts />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/youtube/:videoId" element={<YouTubePlayer />} />
               <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>
