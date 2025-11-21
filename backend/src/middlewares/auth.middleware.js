@@ -9,7 +9,7 @@ import { User } from "../models/user.model.js";
  * - Verifies signature using ACCESS_TOKEN_SECRET
  * - Attaches user (without password/refreshToken) to req.user
  */
-export const verifyJWT = asyncHandler(async (req, _, next) => {
+export const verifyJWT = asyncHandler(async (req, res, next) => {
   // Try cookies first, then Authorization header
   const rawAuthHeader =
     req.header("Authorization") || req.header("authorization");
@@ -29,9 +29,45 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      throw new ApiError(401, "Access token expired");
+      // Try to refresh the token
+      const refreshToken = req.cookies?.refreshToken;
+      if (!refreshToken) {
+        throw new ApiError(401, "Access token expired and no refresh token");
+      }
+
+      try {
+        const decodedRefresh = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET
+        );
+        const user = await User.findById(decodedRefresh._id);
+        if (!user || user.refreshToken !== refreshToken) {
+          throw new ApiError(401, "Invalid refresh token");
+        }
+
+        // Generate new tokens
+        const accessToken = user.generateAccessToken();
+        const newRefreshToken = user.generateRefreshToken();
+        user.refreshToken = newRefreshToken;
+        await user.save({ validateBeforeSave: false });
+
+        // Set new cookies
+        const options = {
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
+        };
+        res.cookie("accessToken", accessToken, options);
+        res.cookie("refreshToken", newRefreshToken, options);
+
+        // Decode the new access token
+        decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+      } catch (refreshErr) {
+        throw new ApiError(401, "Access token expired and refresh failed");
+      }
+    } else {
+      throw new ApiError(401, "Invalid access token");
     }
-    throw new ApiError(401, "Invalid access token");
   }
 
   const user = await User.findById(decodedToken?._id).select(
