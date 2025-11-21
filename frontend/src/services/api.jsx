@@ -29,24 +29,40 @@ async function request(path, { method = "GET", body, token, signal, headers = {}
   if (!res.ok) {
     // Handle 401 Unauthorized - Attempt to refresh token
     if (res.status === 401 && !opts._retry && !url.includes("/refresh-token")) {
+      console.log("🔒 401 detected, attempting token refresh...");
       try {
+        const refreshToken = localStorage.getItem("refreshToken");
         const refreshRes = await fetch(API_BASE + "/users/refresh-token", {
           method: "POST",
-          credentials: "include", // Send refresh token cookie
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ refreshToken }), // Send token in body as fallback
         });
 
         if (refreshRes.ok) {
           const refreshData = await refreshRes.json();
           const newAccessToken = refreshData?.data?.accessToken;
+          const newRefreshToken = refreshData?.data?.refreshToken;
+
+          console.log("✅ Token refresh successful");
 
           if (newAccessToken) {
             localStorage.setItem("accessToken", newAccessToken);
+            if (newRefreshToken) localStorage.setItem("refreshToken", newRefreshToken);
+            
             // Retry original request with new token
             return request(path, { ...opts, token: newAccessToken, _retry: true });
           }
+        } else {
+          console.error("❌ Token refresh failed:", refreshRes.status);
+          // Clear tokens if refresh fails to prevent infinite loops/stale state
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login"; // Force redirect to login
         }
       } catch (refreshError) {
-        // Refresh failed, proceed to throw original error
+        console.error("❌ Token refresh error:", refreshError);
       }
     }
 
