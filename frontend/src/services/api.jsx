@@ -27,6 +27,29 @@ async function request(path, { method = "GET", body, token, signal, headers = {}
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
 
   if (!res.ok) {
+    // Handle 401 Unauthorized - Attempt to refresh token
+    if (res.status === 401 && !opts._retry && !url.includes("/refresh-token")) {
+      try {
+        const refreshRes = await fetch(API_BASE + "/users/refresh-token", {
+          method: "POST",
+          credentials: "include", // Send refresh token cookie
+        });
+
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json();
+          const newAccessToken = refreshData?.data?.accessToken;
+
+          if (newAccessToken) {
+            localStorage.setItem("accessToken", newAccessToken);
+            // Retry original request with new token
+            return request(path, { ...opts, token: newAccessToken, _retry: true });
+          }
+        }
+      } catch (refreshError) {
+        // Refresh failed, proceed to throw original error
+      }
+    }
+
     const err = new Error(data?.message || `Request failed: ${res.status}`);
     err.status = res.status;
     err.data = data;
