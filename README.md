@@ -1,4 +1,4 @@
-# Cinevo - Video Sharing Platform
+# Cinevo - Video Platform
 
 A modern, full-stack video sharing platform built with React and Node.js. Upload, share, discover, and interact with videos in a clean, responsive interface.
 
