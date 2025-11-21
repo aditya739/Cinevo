@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+import api from "../services/api.jsx";
 
 const ContinueWatching = () => {
   const [videos, setVideos] = useState([]);
@@ -11,10 +8,8 @@ const ContinueWatching = () => {
   useEffect(() => {
     const fetchContinueWatching = async () => {
       try {
-        const response = await axios.get(`${API_URL}/watch-progress/continue-watching`, {
-          withCredentials: true,
-        });
-        setVideos(response.data.data || []);
+        const response = await api.get("/watch-progress/continue-watching");
+        setVideos(response.data || []);
       } catch (error) {
         console.error("Error fetching continue watching:", error);
       } finally {
