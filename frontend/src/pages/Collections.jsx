@@ -7,14 +7,21 @@ export default function Collections() {
   const { user } = useAuth();
   const [collections, setCollections] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
     (async () => {
+      setLoading(true);
+      setError("");
       try {
         const res = await api.get("/collections");
-        setCollections(res?.data ?? res ?? []);
+        // Safely extract collections array
+        const arr = res?.data?.collections ?? res?.data ?? res ?? [];
+        setCollections(Array.isArray(arr) ? arr : []);
       } catch (e) {
-        // Silently handle error
+        console.error("Error fetching collections:", e.message);
+        setError("Unable to load collections. Is the backend running?");
+        setCollections([]);
       } finally {
         setLoading(false);
       }
@@ -35,19 +42,24 @@ export default function Collections() {
     }
   };
 
-  if (!user) return (
-    <div className="text-center py-16">
-      <div className="bg-blue-50 border border-blue-200 text-blue-700 px-6 py-4 rounded-lg inline-block">
-        Please login to view collections.
+  if (loading) return (
+    <div className="flex justify-center items-center h-96">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <p className="text-gray-600">Loading collections...</p>
       </div>
     </div>
   );
 
-  if (loading) return <div>Loading collections...</div>;
-
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">My Collections</h1>
+      
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
       
       {collections.length === 0 ? (
         <p className="text-gray-600">No collections yet. Save some videos to get started!</p>
