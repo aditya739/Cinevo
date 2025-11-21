@@ -16,7 +16,6 @@ const SearchPage = () => {
     minViews: "",
     maxViews: "",
     creator: "",
-    creator: "",
     sort: "newest",
     source: "local", // 'local' or 'youtube'
   });
